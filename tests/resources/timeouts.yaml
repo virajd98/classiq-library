@@ -1,8 +1,11 @@
+1D_Periodic_Laplacian_BE.qmod: 30
 3_sat_grover_large.qmod: 60
 3_sat_grover_small.qmod: 90
 3sat_oracles.ipynb: 1800
 CRX.qmod: 10
 CX.qmod: 10
+ND_Laplacian_BE.ipynb: 300
+ND_Periodic_Laplacian_BE.qmod: 10
 Option_Pricing_Workshop.ipynb: 400
 PHASE.qmod: 10
 Qmod_tutorial_part1.ipynb: 500
