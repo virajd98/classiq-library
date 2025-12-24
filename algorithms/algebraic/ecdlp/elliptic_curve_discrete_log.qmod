@@ -9,159 +9,87 @@ qfunc hadamard_transform_expanded___0(target: qbit[3]) {
   }
 }
 
-qperm modular_in_place_add_constant_expanded___0(x: qnum<3, False, 0>) {
+qperm modular_add_constant_inplace_expanded___0(modulus: int, a: int, x: qnum<3, False, 0>) {
   carry: qbit;
   allocate(1, carry);
   temp: qnum<4, True, 0>;
   within {
     {x, carry} -> temp;
   } apply {
-    temp += 2;
-    temp += -7;
+    temp += a;
+    temp += -modulus;
   }
   control (carry) {
-    x += 7;
+    x += modulus;
   }
-  carry ^= x >= 2;
+  carry ^= x >= a;
   free(carry);
 }
 
-qperm modular_in_place_add_constant_expanded___1(x: qnum<3, False, 0>) {
+qperm mock_modular_inverse_expanded___0(const x: qnum<3, False, 0>, result: qnum<3, False, 0>) {
+  result ^= [0, 1, 4, 5, 2, 3, 6, 0][x];
+}
+
+qperm modular_add_inplace_expanded___0(modulus: int, const x: qnum<3, False, 0>, y: qnum<3, False, 0>) {
   carry: qbit;
   allocate(1, carry);
   temp: qnum<4, True, 0>;
   within {
-    {x, carry} -> temp;
+    {y, carry} -> temp;
   } apply {
-    temp += 0;
-    temp += -7;
+    temp += x;
+    temp += -modulus;
   }
   control (carry) {
-    x += 7;
-  }
-  carry ^= x >= 0;
-  free(carry);
-}
-
-qperm set_value_expanded___0(reg: qnum<3, False, 0>) {
-  reg ^= 1;
-}
-
-qperm set_value_expanded___1(reg: qnum<3, False, 0>) {
-  reg ^= 4;
-}
-
-qperm set_value_expanded___2(reg: qnum<3, False, 0>) {
-  reg ^= 5;
-}
-
-qperm set_value_expanded___3(reg: qnum<3, False, 0>) {
-  reg ^= 2;
-}
-
-qperm set_value_expanded___4(reg: qnum<3, False, 0>) {
-  reg ^= 3;
-}
-
-qperm set_value_expanded___5(reg: qnum<3, False, 0>) {
-  reg ^= 6;
-}
-
-qperm mock_inverse_modulus_expanded___0(const x: qnum<3, False, 0>, result: qnum<3, False, 0>) {
-  control (x == 1) {
-    set_value_expanded___0(result);
-  }
-  control (x == 2) {
-    set_value_expanded___1(result);
-  }
-  control (x == 3) {
-    set_value_expanded___2(result);
-  }
-  control (x == 4) {
-    set_value_expanded___3(result);
-  }
-  control (x == 5) {
-    set_value_expanded___4(result);
-  }
-  control (x == 6) {
-    set_value_expanded___5(result);
-  }
-}
-
-qperm modular_in_place_add_expanded___0(const x: qnum<3, False, 0>, y: qnum<3, False, 0>) {
-  carry: qbit;
-  allocate(1, carry);
-  res_and_carry: qnum<4, True, 0>;
-  within {
-    {y, carry} -> res_and_carry;
-  } apply {
-    res_and_carry += x;
-    res_and_carry += -7;
-  }
-  control (carry) {
-    y += 7;
+    y += modulus;
   }
   carry ^= y >= x;
   free(carry);
 }
 
-qperm shift_left_expanded___0(reg: qbit[4]) {
-  SWAP(reg[3], reg[2]);
-  SWAP(reg[2], reg[1]);
-  SWAP(reg[1], reg[0]);
+qperm cyclic_shift_left_expanded___0(reg: qbit[4]) {
+  repeat (i: 3) {
+    SWAP(reg[(4 - i) - 1], reg[(4 - i) - 2]);
+  }
 }
 
-qperm modular_in_place_double_expanded___0(x: qnum<3, False, 0>) {
+qperm modular_double_inplace_expanded___0(modulus: int, x: qnum<3, False, 0>) {
   carry: qbit;
   allocate(1, carry);
   res_and_carry: qnum<4, True, 0>;
   within {
     {x, carry} -> res_and_carry;
   } apply {
-    shift_left_expanded___0(res_and_carry);
-    res_and_carry += -7;
+    cyclic_shift_left_expanded___0(res_and_carry);
+    res_and_carry += -modulus;
   }
   control (carry) {
-    x += 7;
+    x += modulus;
   }
-  lsb: qnum<1, False, 0>;
-  rest: qnum<2, False, 0>;
-  within {
-    x -> {lsb, rest};
-  } apply {
-    X(lsb);
-    CX(lsb, carry);
-    X(lsb);
-  }
+  carry ^= (x % 2) == 0;
   free(carry);
 }
 
-qperm modular_out_of_place_multiply_expanded___0(const x: qbit[3], const y: qbit[3], z: qbit[3]) {
-  control (x[2]) {
-    modular_in_place_add_expanded___0(y, z);
-  }
-  modular_in_place_double_expanded___0(z);
-  control (x[1]) {
-    modular_in_place_add_expanded___0(y, z);
-  }
-  modular_in_place_double_expanded___0(z);
-  control (x[0]) {
-    modular_in_place_add_expanded___0(y, z);
+qperm modular_multiply_expanded___0(modulus: int, const x: qbit[3], const y: qbit[3], z: qbit[3]) {
+  repeat (idx: 3) {
+    control (x[(3 - idx) - 1]) {
+      modular_add_inplace_expanded___0(modulus, y, z);
+    }
+    if (idx != 2) {
+      modular_double_inplace_expanded___0(modulus, z);
+    }
   }
 }
 
-qperm modular_out_of_place_square_expanded___0(const x: qbit[3], z: qbit[3]) {
-  anc: qbit;
-  control (x[2]) {
-    modular_in_place_add_expanded___0(x, z);
+qperm modular_square_expanded___0(modulus: int, const x: qbit[3], z: qbit[3]) {
+  repeat (i: 2) {
+    control (x[(3 - i) - 1]) {
+      modular_add_inplace_expanded___0(modulus, x, z);
+    }
+    modular_double_inplace_expanded___0(modulus, z);
   }
-  modular_in_place_double_expanded___0(z);
-  control (x[1]) {
-    modular_in_place_add_expanded___0(x, z);
-  }
-  modular_in_place_double_expanded___0(z);
   control (x[0]) {
-    modular_in_place_add_expanded___0(x, z);
+    modular_add_inplace_expanded___0(modulus, x, z);
   }
 }
 
@@ -171,51 +99,30 @@ qperm apply_to_all_expanded___0(target: qbit[3]) {
   }
 }
 
-qperm bitwise_negation_expanded___0(arr: qbit[3]) {
-  apply_to_all_expanded___0(arr);
+qperm bitwise_negate_expanded___0(x: qbit[3]) {
+  apply_to_all_expanded___0(x);
 }
 
-qperm modular_in_place_negate_expanded___0(x: qnum<3, False, 0>) {
+qperm modular_negate_inplace_expanded___0(modulus: int, x: qnum<3, False, 0>) {
   is_all_zeros: qbit;
   allocate(1, is_all_zeros);
   is_all_zeros ^= x == 0;
   control (is_all_zeros) {
-    x += 7;
+    x += modulus;
   }
-  x += 0;
+  x += 7 - modulus;
   is_all_zeros ^= x == 7;
-  bitwise_negation_expanded___0(x);
+  bitwise_negate_expanded___0(x);
   free(is_all_zeros);
 }
 
-qperm modular_in_place_subtract_expanded___0(const x: qnum<3, False, 0>, y: qnum<3, False, 0>) {
-  modular_in_place_negate_expanded___0(y);
-  modular_in_place_add_expanded___0(x, y);
+qperm modular_subtract_inplace_expanded___0(modulus: int, const x: qnum<3, False, 0>, y: qnum<3, False, 0>) {
+  modular_negate_inplace_expanded___0(modulus, y);
+  modular_add_inplace_expanded___0(modulus, x, y);
 }
 
-qperm set_value_expanded___6(reg: qnum<3, False, 0>) {
-  reg ^= 1;
-}
-
-qperm mock_inverse_modulus_expanded___1(const x: qnum<3, False, 0>, result: qnum<3, False, 0>) {
-  control (x == 1) {
-    set_value_expanded___6(result);
-  }
-  control (x == 2) {
-    set_value_expanded___1(result);
-  }
-  control (x == 3) {
-    set_value_expanded___2(result);
-  }
-  control (x == 4) {
-    set_value_expanded___3(result);
-  }
-  control (x == 5) {
-    set_value_expanded___4(result);
-  }
-  control (x == 6) {
-    set_value_expanded___5(result);
-  }
+qperm mock_modular_inverse_expanded___1(const x: qnum<3, False, 0>, result: qnum<3, False, 0>) {
+  result ^= [0, 1, 4, 5, 2, 3, 6, 0][x];
 }
 
 qperm ec_point_add_expanded___0(ecp: EllipticCurvePoint) {
@@ -223,76 +130,41 @@ qperm ec_point_add_expanded___0(ecp: EllipticCurvePoint) {
   allocate(3, slope);
   t0: qnum<3, False, 0>;
   allocate(3, t0);
-  modular_in_place_add_constant_expanded___0(ecp.y);
-  modular_in_place_add_constant_expanded___1(ecp.x);
+  modular_add_constant_inplace_expanded___0(7, 2, ecp.y);
+  modular_add_constant_inplace_expanded___0(7, 0, ecp.x);
   within {
-    mock_inverse_modulus_expanded___0(ecp.x, t0);
+    mock_modular_inverse_expanded___0(ecp.x, t0);
   } apply {
-    modular_out_of_place_multiply_expanded___0(t0, ecp.y, slope);
+    modular_multiply_expanded___0(7, t0, ecp.y, slope);
   }
   within {
-    modular_out_of_place_multiply_expanded___0(slope, ecp.x, t0);
+    modular_multiply_expanded___0(7, slope, ecp.x, t0);
   } apply {
     ecp.y ^= t0;
   }
   within {
-    modular_out_of_place_square_expanded___0(slope, t0);
+    modular_square_expanded___0(7, slope, t0);
   } apply {
-    modular_in_place_subtract_expanded___0(t0, ecp.x);
-    modular_in_place_negate_expanded___0(ecp.x);
-    modular_in_place_add_constant_expanded___1(ecp.x);
+    modular_subtract_inplace_expanded___0(7, t0, ecp.x);
+    modular_negate_inplace_expanded___0(7, ecp.x);
+    modular_add_constant_inplace_expanded___0(7, 0, ecp.x);
   }
-  modular_out_of_place_multiply_expanded___0(slope, ecp.x, ecp.y);
+  modular_multiply_expanded___0(7, slope, ecp.x, ecp.y);
   t1: qnum<3, False, 0>;
   within {
-    mock_inverse_modulus_expanded___1(ecp.x, t0);
+    mock_modular_inverse_expanded___1(ecp.x, t0);
   } apply {
     within {
       allocate(3, t1);
-      modular_out_of_place_multiply_expanded___0(t0, ecp.y, t1);
+      modular_multiply_expanded___0(7, t0, ecp.y, t1);
     } apply {
       slope ^= t1;
     }
   }
   free(slope);
-  modular_in_place_add_constant_expanded___0(ecp.y);
-  modular_in_place_negate_expanded___0(ecp.x);
-  modular_in_place_add_constant_expanded___1(ecp.x);
-  free(t0);
-}
-
-qperm modular_in_place_add_constant_expanded___2(x: qnum<3, False, 0>) {
-  carry: qbit;
-  allocate(1, carry);
-  temp: qnum<4, True, 0>;
-  within {
-    {x, carry} -> temp;
-  } apply {
-    temp += 6;
-    temp += -7;
-  }
-  control (carry) {
-    x += 7;
-  }
-  carry ^= x >= 6;
-  free(carry);
-}
-
-qperm modular_in_place_add_constant_expanded___3(x: qnum<3, False, 0>) {
-  carry: qbit;
-  allocate(1, carry);
-  temp: qnum<4, True, 0>;
-  within {
-    {x, carry} -> temp;
-  } apply {
-    temp += 5;
-    temp += -7;
-  }
-  control (carry) {
-    x += 7;
-  }
-  carry ^= x >= 5;
-  free(carry);
+  modular_add_constant_inplace_expanded___0(7, 2, ecp.y);
+  modular_negate_inplace_expanded___0(7, ecp.x);
+  modular_add_constant_inplace_expanded___0(7, 0, ecp.x);
 }
 
 qperm ec_point_add_expanded___1(ecp: EllipticCurvePoint) {
@@ -300,42 +172,41 @@ qperm ec_point_add_expanded___1(ecp: EllipticCurvePoint) {
   allocate(3, slope);
   t0: qnum<3, False, 0>;
   allocate(3, t0);
-  modular_in_place_add_constant_expanded___2(ecp.y);
-  modular_in_place_add_constant_expanded___3(ecp.x);
+  modular_add_constant_inplace_expanded___0(7, 6, ecp.y);
+  modular_add_constant_inplace_expanded___0(7, 5, ecp.x);
   within {
-    mock_inverse_modulus_expanded___0(ecp.x, t0);
+    mock_modular_inverse_expanded___0(ecp.x, t0);
   } apply {
-    modular_out_of_place_multiply_expanded___0(t0, ecp.y, slope);
+    modular_multiply_expanded___0(7, t0, ecp.y, slope);
   }
   within {
-    modular_out_of_place_multiply_expanded___0(slope, ecp.x, t0);
+    modular_multiply_expanded___0(7, slope, ecp.x, t0);
   } apply {
     ecp.y ^= t0;
   }
   within {
-    modular_out_of_place_square_expanded___0(slope, t0);
+    modular_square_expanded___0(7, slope, t0);
   } apply {
-    modular_in_place_subtract_expanded___0(t0, ecp.x);
-    modular_in_place_negate_expanded___0(ecp.x);
-    modular_in_place_add_constant_expanded___2(ecp.x);
+    modular_subtract_inplace_expanded___0(7, t0, ecp.x);
+    modular_negate_inplace_expanded___0(7, ecp.x);
+    modular_add_constant_inplace_expanded___0(7, 6, ecp.x);
   }
-  modular_out_of_place_multiply_expanded___0(slope, ecp.x, ecp.y);
+  modular_multiply_expanded___0(7, slope, ecp.x, ecp.y);
   t1: qnum<3, False, 0>;
   within {
-    mock_inverse_modulus_expanded___1(ecp.x, t0);
+    mock_modular_inverse_expanded___1(ecp.x, t0);
   } apply {
     within {
       allocate(3, t1);
-      modular_out_of_place_multiply_expanded___0(t0, ecp.y, t1);
+      modular_multiply_expanded___0(7, t0, ecp.y, t1);
     } apply {
       slope ^= t1;
     }
   }
   free(slope);
-  modular_in_place_add_constant_expanded___2(ecp.y);
-  modular_in_place_negate_expanded___0(ecp.x);
-  modular_in_place_add_constant_expanded___0(ecp.x);
-  free(t0);
+  modular_add_constant_inplace_expanded___0(7, 6, ecp.y);
+  modular_negate_inplace_expanded___0(7, ecp.x);
+  modular_add_constant_inplace_expanded___0(7, 2, ecp.x);
 }
 
 qperm ec_point_add_expanded___2(ecp: EllipticCurvePoint) {
@@ -343,42 +214,41 @@ qperm ec_point_add_expanded___2(ecp: EllipticCurvePoint) {
   allocate(3, slope);
   t0: qnum<3, False, 0>;
   allocate(3, t0);
-  modular_in_place_add_constant_expanded___3(ecp.y);
-  modular_in_place_add_constant_expanded___1(ecp.x);
+  modular_add_constant_inplace_expanded___0(7, 5, ecp.y);
+  modular_add_constant_inplace_expanded___0(7, 0, ecp.x);
   within {
-    mock_inverse_modulus_expanded___0(ecp.x, t0);
+    mock_modular_inverse_expanded___0(ecp.x, t0);
   } apply {
-    modular_out_of_place_multiply_expanded___0(t0, ecp.y, slope);
+    modular_multiply_expanded___0(7, t0, ecp.y, slope);
   }
   within {
-    modular_out_of_place_multiply_expanded___0(slope, ecp.x, t0);
+    modular_multiply_expanded___0(7, slope, ecp.x, t0);
   } apply {
     ecp.y ^= t0;
   }
   within {
-    modular_out_of_place_square_expanded___0(slope, t0);
+    modular_square_expanded___0(7, slope, t0);
   } apply {
-    modular_in_place_subtract_expanded___0(t0, ecp.x);
-    modular_in_place_negate_expanded___0(ecp.x);
-    modular_in_place_add_constant_expanded___1(ecp.x);
+    modular_subtract_inplace_expanded___0(7, t0, ecp.x);
+    modular_negate_inplace_expanded___0(7, ecp.x);
+    modular_add_constant_inplace_expanded___0(7, 0, ecp.x);
   }
-  modular_out_of_place_multiply_expanded___0(slope, ecp.x, ecp.y);
+  modular_multiply_expanded___0(7, slope, ecp.x, ecp.y);
   t1: qnum<3, False, 0>;
   within {
-    mock_inverse_modulus_expanded___1(ecp.x, t0);
+    mock_modular_inverse_expanded___1(ecp.x, t0);
   } apply {
     within {
       allocate(3, t1);
-      modular_out_of_place_multiply_expanded___0(t0, ecp.y, t1);
+      modular_multiply_expanded___0(7, t0, ecp.y, t1);
     } apply {
       slope ^= t1;
     }
   }
   free(slope);
-  modular_in_place_add_constant_expanded___3(ecp.y);
-  modular_in_place_negate_expanded___0(ecp.x);
-  modular_in_place_add_constant_expanded___1(ecp.x);
-  free(t0);
+  modular_add_constant_inplace_expanded___0(7, 5, ecp.y);
+  modular_negate_inplace_expanded___0(7, ecp.x);
+  modular_add_constant_inplace_expanded___0(7, 0, ecp.x);
 }
 
 qperm ec_scalar_mult_add_expanded___0(ecp: EllipticCurvePoint, k: qbit[3]) {

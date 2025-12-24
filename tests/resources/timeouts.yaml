@@ -60,6 +60,8 @@ cheb_lcu_solver_banded_be.qmod: 400
 cheb_lcu_solver_pauli_be.qmod: 400
 chebyshev_approximation.ipynb: 20
 checkerboard_BE_N8.qmod: 200
+classical_shadows.ipynb: 600
+classical_shadows.qmod: 10
 classiq_chemistry_application.ipynb: 80
 classiq_discrete_quantum_walk.ipynb: 300
 classiq_iQuHack_2025_final.ipynb: 200
@@ -141,8 +143,6 @@ hamiltonian_simulation_guide_trotter.qmod: 300
 hamiltonian_simulation_qsvt.qmod: 300
 hamiltonian_simulation_qubitization.qmod: 300
 hamiltonian_simulation_with_block_encoding.ipynb: 900
-hamming_weights.qmod: 1799
-hamming_weights_compilation_workshop.ipynb: 1799
 hardware_aware_mcx.ipynb: 56
 hardware_aware_mcx_all_to_all.qmod: 36
 hardware_aware_mcx_grid.qmod: 10
@@ -220,8 +220,8 @@ multiplication_2vars_example.qmod: 10
 multiplication_float_example.qmod: 10
 negation_example.ipynb: 30
 negation_example.qmod: 10
-network_traffic_optimization.ipynb: 1799
-network_traffic_optimization.qmod: 1799
+network_traffic_optimization.ipynb: 300
+network_traffic_optimization.qmod: 300
 oblivious_amplitude_amplification.ipynb: 40
 oblivious_amplitude_amplification.qmod: 10
 option_pricing.ipynb: 140
